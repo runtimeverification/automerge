@@ -1,0 +1,55 @@
+name: "Automerge"
+author: "Runtime Verification Inc"
+description: "Automatically merge pull requests meeting the requiresments of All Checks Pass, Review Approved, and Up-to-date. This action is a substituion for Github merge queues. Merge queues fails to adhere to passing checks. Automerge helps support a linear well tested PR before it is merged."
+inputs:
+  list-of-repos:
+    description: 'List of repos to merge'
+    required: true
+  org:
+    description: 'Organization name under which to run on'
+    required: true
+  repo:
+    description: 'Repository name under Organization'
+    required: true
+  token:
+    description: 'Access token to be able to write to the repository'
+    required: true
+outputs: 
+  merged:
+    value: ${{ steps.automerge.outputs.merged }}
+    description: 'Whether or not the PR was merged'
+  error:
+    value: ${{ steps.automerge.outputs.error }}
+    description: 'Error message if the PR was not merged'
+  success:
+    value: ${{ steps.automerge.outputs.success }}
+    description: 'Success message if the PR was merged'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5.0.0
+      with:
+        python-version: '3.x'
+    
+    - name: Install dependencies
+      shell: bash {0}
+      run: |
+        pip install logging os subprocess sys github typing
+    
+    - name: 'Check out repo: ${{ inputs.org }}/${{ inputs.repo }}'
+      uses: actions/checkout@v3
+      with:
+        token: ${{ inputs.token }}
+        repository: ${{ inputs.org }}/${{ inputs.repo }}
+        path: tmp-${{ inputs.repo }}
+        fetch-depth: 0
+    
+    - name: 'Run automerger: ${{ inputs.org }}/${{ inputs.repo }}'
+      shell: bash {0}
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      # TODO: for some reason, even though the script fails, the workflow doesn't
+      working-directory: tmp-${{ inputs.repo }}
+      run: python3 ../src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }}
+

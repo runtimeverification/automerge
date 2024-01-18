@@ -1,0 +1,18 @@
+[
+  "algorand-sc-semantics"
+, "amp"
+, "audit-kontrol-template"
+, "avm-semantics"
+, "blockchain-k-plugin"
+, "blockswap-server"
+, "casper-cbc-proofs"
+, "c-semantics"
+, "erc20-verification"
+, "ercx"
+, "evm-semantics"
+, "firefly"
+, "firefly-web"
+, "foundry-tests"
+, "haskell-backend"
+, "homebrew-k"
+]
