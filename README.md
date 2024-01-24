@@ -14,9 +14,10 @@ From the repository the workflow is running from it will require a JSON file cal
 In .github/workflows/automerge.yml
 ```yaml
 name: Test Workflow
-
-on: [push, pull_request, workflow_dispatch]
-
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/20 * * * *'
 jobs:
   list:
     name: 'List Repos'
