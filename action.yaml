@@ -47,5 +47,5 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       working-directory: tmp-${{ inputs.repo }}
-      run: python3 ../src/automerge.py --dry-run --org ${{ inputs.org }} --repo ${{ inputs.repo }}
+      run: python3 ../src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }}
 
