@@ -35,7 +35,7 @@ runs:
         pip install logging os subprocess sys github typing
     
     - name: 'Check out repo: ${{ inputs.org }}/${{ inputs.repo }}'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4.0.0
       with:
         token: ${{ inputs.token }}
         repository: ${{ inputs.org }}/${{ inputs.repo }}

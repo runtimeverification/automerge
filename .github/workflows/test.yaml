@@ -10,7 +10,7 @@ jobs:
       matrix: ${{ steps.list.outputs.value }}
     steps:
       - name: 'Check out devops repo'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.0.0
       - id: list
         name: 'List automerge repos'
         run: echo "value=$(cat test/automerge.json | tr -d '\n')" >> $GITHUB_OUTPUT
@@ -24,6 +24,9 @@ jobs:
       matrix:
         value: ${{fromJson(needs.list.outputs.matrix)}}
     steps:
+      - name: 'Check Automerge Repo to Test'
+        uses: actions/checkout@v4.0.0
+
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
         uses: ./ # This uses the action in the root directory
         with:
