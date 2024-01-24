@@ -32,7 +32,7 @@ runs:
     
     - name: Install dependencies
       shell: bash {0}
-      run: pip install logging os subprocess sys github typing
+      run: pip install logging subprocess github argparse
     
     - name: 'Check out repo: ${{ inputs.org }}/${{ inputs.repo }}'
       uses: actions/checkout@v4.0.0
