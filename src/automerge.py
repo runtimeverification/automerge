@@ -135,7 +135,7 @@ for pr in automerge_prs:
     if pr.mergeable_state == 'behind':
         automerge_out_of_date_passing_prs.append(pr)
 pr_string = '\n'.join(map(pr_to_display_string, automerge_out_of_date_passing_prs))
-_LOGGER.info(f' Automerge approved out-of-date passing PRs:\n{pr_string}\n')
+_LOGGER.info(f' Approved out-of-date passing PRs:\n{pr_string}\n')
 if automerge_out_of_date_passing_prs:
     pr = automerge_out_of_date_passing_prs[0]
     _LOGGER.info(f' Updating PR:\n{pr_to_display_string(pr)}\n')
