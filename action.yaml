@@ -3,7 +3,7 @@ author: "Runtime Verification Inc"
 branding:
   icon: "git-merge"
   color: "blue"
-description: "Automatically merge pull requests meeting the requiresments of All Checks Pass, Review Approved, and Up-to-date. This action is a substituion for Github merge queues. Merge queues fails to adhere to passing checks. Automerge helps support a linear well tested PR before it is merged."
+description: "Merge tracked PR w/ met requirements All Checks Pass, Review Approved,and Up-to-date."
 inputs:
   org:
     description: 'Organization name under which to run on'
