@@ -1,4 +1,4 @@
 # Runtime Requirements
 logging 
-github
+PyGithub
 argparse
