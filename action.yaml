@@ -2,9 +2,6 @@ name: "Automerge"
 author: "Runtime Verification Inc"
 description: "Automatically merge pull requests meeting the requiresments of All Checks Pass, Review Approved, and Up-to-date. This action is a substituion for Github merge queues. Merge queues fails to adhere to passing checks. Automerge helps support a linear well tested PR before it is merged."
 inputs:
-  list-of-repos:
-    description: 'List of repos to merge'
-    required: true
   org:
     description: 'Organization name under which to run on'
     required: true
