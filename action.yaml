@@ -27,7 +27,7 @@ runs:
     - name: Setup Python
       uses: actions/setup-python@v5.0.0
       with:
-        python-version: '3.x'
+        python-version: '3.10'
     
     - name: Install dependencies
       shell: bash {0}
@@ -47,5 +47,5 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       working-directory: tmp-${{ inputs.repo }}
-      run: python3 ../src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }}
+      run: python3 ../src/automerge.py --dry-run --org ${{ inputs.org }} --repo ${{ inputs.repo }}
 
