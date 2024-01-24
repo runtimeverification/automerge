@@ -13,6 +13,7 @@ from typing import Final
 parser = argparse.ArgumentParser(description='Automerge approved PRs.')
 parser.add_argument('--repo', type=str, help='The repository to check.')
 parser.add_argument('--org', type=str, help='The GitHub organization to check.')
+parser.add_argument('--dry-run', action='store_true', help='Enable DR run mode.')
 args = parser.parse_args()
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -20,11 +21,14 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 logging.basicConfig(level=logging.INFO)
 
 def pr_to_display_string(pr):
-    return f'- {pr.number}: {pr.title}'
+    return f'- {pr.number}: {pr.title}\n\t\t{pr.html_url}'
 
-def run_git_command(args: str) -> subprocess.CompletedProcess:
-    command = ['git'] + args.split(' ')
+def run_git_command(command_args: str) -> subprocess.CompletedProcess:
+    command = ['git'] + command_args.split(' ')
     _LOGGER.debug(f'Running: {" ".join(command)}')
+    if args.dry_run:
+        _LOGGER.info(f'Would have run: {" ".join(command)}')
+        return subprocess.CompletedProcess(args=command, returncode=0)
     try:
         res = subprocess.run(command, stdout=None, stderr=None, check=False, text=True)
     except subprocess.CalledProcessError as err:
@@ -33,7 +37,7 @@ def run_git_command(args: str) -> subprocess.CompletedProcess:
     return res
 
 github = Github(login_or_token=os.environ['GITHUB_TOKEN'])
-repo = args.org/args.repo
+repo = args.org + "/" + args.repo
 
 # 1. Get PRs that are:
     # - Open.
@@ -90,11 +94,14 @@ _LOGGER.info(f' Automerge approved up-to-date PRs:\n{pr_string}\n')
     # - Labelled as `automerge`,
     # - Approved, and
     # - Up-to-date.
-# If so, merge one.
+# If so, merge
 if automerge_up_to_date_prs:
     pr = automerge_up_to_date_prs[0]
     _LOGGER.info(f' Merging PR:\n{pr_to_display_string(pr)}\n')
-    pr.merge(merge_method='squash')
+    if args.dry_run:
+        _LOGGER.info(f'Would have merged PR:\n{pr_to_display_string(pr)}\n')
+    else:
+        pr.merge(merge_method='squash')
     automerge_up_to_date_prs.pop(0)
 
 # 5. Get PRs that are:
@@ -103,7 +110,7 @@ if automerge_up_to_date_prs:
     # - Approved,
     # - Up-to-date, and
     # - Pending tests.
-# If so, quit (reduce build pressure).
+# 
 automerge_up_to_date_pending_prs = []
 for pr in automerge_prs:
     is_up_to_date = run_git_command(f'merge-base --is-ancestor {pr.base.sha} {pr.head.sha}').returncode == 0
@@ -113,10 +120,8 @@ for pr in automerge_prs:
         print(commit.get_combined_status())
         automerge_up_to_date_pending_prs.append(pr)
 pr_string = '\n'.join(map(pr_to_display_string, automerge_up_to_date_pending_prs))
-_LOGGER.info(f' Automerge approved up-to-date pending PRs:\n{pr_string}\n')
-if automerge_up_to_date_pending_prs:
-    _LOGGER.info(' Quitting.')
-    sys.exit(0)
+_LOGGER.info(f' Waiting on approved up-to-date pending/failing PRs:\n{pr_string}\n')
+
 
 # 6. Get PRs that are:
     # - Open,
