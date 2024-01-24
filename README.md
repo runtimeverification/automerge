@@ -1,9 +1,36 @@
-Example workflow using Automerge across an Github Organization
-==============================================================
-This example workflow will run every 20 minutes and will automerge any PRs that are ready to be merged.  It will also cancel any previous runs of the workflow if they are still running.
+# Automerge PR Action
+This action is intended to be used in tandem with a CI workflow. 
+This workflow requires a github token  with read/write access to all the repositories it will be tracking 
 
-From the repository the workflow is running from it will require a JSON file called `automerge.json` that contains a list of repositories to run the workflow on.  The JSON file should be in the following format:
+Any PRs that meet the following criteria will be automerged:
+- PR is open
+- PR is mergeable
+- PR is passing test
+- PR is approved by at least one reviewer
+- PR is up-to-date with the base branch
 
+Any PR with the following criteria will be updated and test will be run before merging:
+- PR is open
+- PR is approved
+- PR is passing PR Tests
+- PR is out-of-date
+
+## Table of Contents
+- [Automerge PR Action](#automerge-pr-action)
+  - [Table of Contents](#table-of-contents)
+  - [Inputs](#inputs)
+  - [Outputs](#outputs)
+  - [Example workflow using Automerge across a Github Organization](#example-workflow-using-automerge-across-a-github-organization)
+  - [The Workflow](#the-workflow)
+  - [Reduce CI Pressure](#reduce-ci-pressure)
+
+# Example workflow using Automerge across a Github Organization
+This example workflow will run every 20 minutes and will automerge PRs for tracked repositories in the organization.
+
+This workflow is recommended for setup in a CI/CD Devops dedicated repostiory. 
+
+For the example a JSON file called `automerge.json` contains a list of repositories to track PR status for merging/updates.
+The JSON file should be in the following format:
 ```json
 [
   "repo1",
@@ -11,9 +38,13 @@ From the repository the workflow is running from it will require a JSON file cal
   "repo3"
 ]
 ```
-In .github/workflows/automerge.yml
+
+## The Workflow
+
+In a workflow we will call `.github/workflows/automerge.yml`. 
+The workflow will run as many jobs in parallel as possible.
 ```yaml
-name: Test Workflow
+name: Example Automerge Workflow
 on:
   workflow_dispatch:
   schedule:
@@ -40,14 +71,36 @@ jobs:
       matrix:
         value: ${{fromJson(needs.list.outputs.matrix)}}
     steps:
-      - name: 'Check Automerge Repo to Test'
-        uses: actions/checkout@v4.0.0
-
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
         uses: ./ # This uses the action in the root directory
         with:
-          org: 'runtimeverification'
+          org: 'runtimeverification' # As long as the token you use has access, any org is valid here
           repo: ${{ matrix.value }}
           token: ${{ secrets.GITHUB_PAT }}
+```
 
+## Reduce CI Pressure
+
+If less CI Pressure is desired, the workflow can be modified to run on sequentially
+```yaml
+name: Test Workflow
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/20 * * * *'
+...
+...
+...
+  automerge-test:
+    name: 'Automerge'
+    runs-on: [ubuntu-latest]
+    needs: list
+    strategy:
+      fail-fast: false
+      max-parallel: 1 # Or any integer up to 256 set by github actions run limit. 
+      matrix:
+        value: ${{fromJson(needs.list.outputs.matrix)}}
+    steps:
+...
+...
 ```
