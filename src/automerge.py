@@ -20,8 +20,10 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 logging.basicConfig(level=logging.INFO)
 
+
 def pr_to_display_string(pr):
     return f'- {pr.number}: {pr.title}\n\t\t{pr.html_url}'
+
 
 def run_git_command(command_args: str) -> subprocess.CompletedProcess:
     command = ['git'] + command_args.split(' ')
@@ -36,11 +38,12 @@ def run_git_command(command_args: str) -> subprocess.CompletedProcess:
         raise
     return res
 
+
 github = Github(login_or_token=os.environ['GITHUB_TOKEN'])
 repo = args.org + "/" + args.repo
 
 # 1. Get PRs that are:
-    # - Open.
+# - Open.
 open_prs = []
 for pr in github.get_repo(repo).get_pulls():
     if pr.state == 'open':
@@ -48,7 +51,7 @@ for pr in github.get_repo(repo).get_pulls():
 pr_string = '\n'.join(map(pr_to_display_string, open_prs))
 _LOGGER.info(f' PRs:\n{pr_string}\n')
 if not open_prs:
-    _LOGGER.info(f' Quitting.')
+    _LOGGER.info(' Quitting.')
 
 # 2. Get PRs that are:
     # - Open,
@@ -56,7 +59,7 @@ if not open_prs:
     # - Approved.
 automerge_prs = []
 for pr in open_prs:
-    labels = [l.name for l in pr.get_labels()]
+    labels = [label.name for label in pr.get_labels()]
     reviews = sorted([(r.state, r.submitted_at) for r in pr.get_reviews()], key=lambda x: x[1], reverse=True)
     reviews = [state for state, _ in reviews]
     if 'automerge' in labels:
@@ -76,11 +79,11 @@ if not automerge_prs:
     sys.exit(0)
 
 # 3. Get PRs that are:
-    # - Open,
-    # - Labelled as `automerge`,
-    # - Approved,
-    # - Up-to-date, and
-    # - Passing tests.
+# - Open,
+# - Labelled as `automerge`,
+# - Approved,
+# - Up-to-date, and
+# - Passing tests.
 automerge_up_to_date_prs = []
 for pr in automerge_prs:
     is_up_to_date = run_git_command(f'merge-base --is-ancestor {pr.base.sha} {pr.head.sha}').returncode == 0
@@ -90,10 +93,10 @@ pr_string = '\n'.join(map(pr_to_display_string, automerge_up_to_date_prs))
 _LOGGER.info(f' Automerge approved up-to-date PRs:\n{pr_string}\n')
 
 # 4. Get PRs that are:
-    # - Open,
-    # - Labelled as `automerge`,
-    # - Approved, and
-    # - Up-to-date.
+# - Open,
+# - Labelled as `automerge`,
+# - Approved, and
+# - Up-to-date.
 # If so, merge
 if automerge_up_to_date_prs:
     pr = automerge_up_to_date_prs[0]
@@ -110,7 +113,6 @@ if automerge_up_to_date_prs:
     # - Approved,
     # - Up-to-date, and
     # - Pending tests.
-# 
 automerge_up_to_date_pending_prs = []
 for pr in automerge_prs:
     is_up_to_date = run_git_command(f'merge-base --is-ancestor {pr.base.sha} {pr.head.sha}').returncode == 0
@@ -124,11 +126,11 @@ _LOGGER.info(f' Waiting on approved up-to-date pending/failing PRs:\n{pr_string}
 
 
 # 6. Get PRs that are:
-    # - Open,
-    # - Labelled as `automerge`,
-    # - Approved,
-    # - Out-of-date, and
-    # - Passing tests.
+# - Open,
+# - Labelled as `automerge`,
+# - Approved,
+# - Out-of-date, and
+# - Passing tests.
 # If so, update the branch.
 automerge_out_of_date_passing_prs = []
 for pr in automerge_prs:
