@@ -98,13 +98,13 @@ _LOGGER.info(f' Automerge approved up-to-date PRs:\n{pr_string}\n')
 # - Approved, and
 # - Up-to-date.
 # If so, merge
-if automerge_up_to_date_prs:
+while automerge_up_to_date_prs:
     pr = automerge_up_to_date_prs[0]
     _LOGGER.info(f' Merging PR:\n{pr_to_display_string(pr)}\n')
     if args.dry_run:
         _LOGGER.info(f'Would have merged PR:\n{pr_to_display_string(pr)}\n')
     else:
-        pr.merge(merge_method='squash')
+        pr.merge(merge_method='squash', merge_title=f'Auto Mergerge: {pr.number}', merge_message='Title: {pr.title}\nURL: {pr.html_url}\n')
     automerge_up_to_date_prs.pop(0)
 
 # 5. Get PRs that are:
