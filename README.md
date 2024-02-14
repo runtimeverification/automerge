@@ -23,6 +23,7 @@ Any PR with the following criteria will be updated and test will be run before m
   - [Example workflow using Automerge across a Github Organization](#example-workflow-using-automerge-across-a-github-organization)
   - [The Workflow](#the-workflow)
   - [Reduce CI Pressure](#reduce-ci-pressure)
+  - [Run Locally](#run-locally)
 
 # Example workflow using Automerge across a Github Organization
 This example workflow will run every 20 minutes and will automerge PRs for tracked repositories in the organization.
@@ -104,3 +105,19 @@ on:
 ...
 ...
 ```
+
+# Run Locally
+Checkout the repository you wish to run automerge on to a local directory. 
+```bash
+git clone git@github.com:org/automerge.git
+cd automerge
+```
+
+Now you need to run the command from this new directory 
+```bash
+$(pwd)/../src/automerge.py --org runtimeverification --repo automerger-test --dry-run
+```
+
+Recommended to first review the actions before running without. Then remove the `--dry-run` flag to run the action. 
+
+

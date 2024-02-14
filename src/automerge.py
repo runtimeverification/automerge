@@ -13,7 +13,7 @@ from typing import Final
 parser = argparse.ArgumentParser(description='Automerge approved PRs.')
 parser.add_argument('--repo', type=str, help='The repository to check.')
 parser.add_argument('--org', type=str, help='The GitHub organization to check.')
-parser.add_argument('--dry-run', action='store_true', help='Enable DR run mode.')
+parser.add_argument('--dry-run', action='store_true', default=False, help='Enable Debug/Dry-Run mode.')
 args = parser.parse_args()
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -98,13 +98,13 @@ _LOGGER.info(f' Automerge approved up-to-date PRs:\n{pr_string}\n')
 # - Approved, and
 # - Up-to-date.
 # If so, merge
-if automerge_up_to_date_prs:
+while automerge_up_to_date_prs:
     pr = automerge_up_to_date_prs[0]
     _LOGGER.info(f' Merging PR:\n{pr_to_display_string(pr)}\n')
     if args.dry_run:
         _LOGGER.info(f'Would have merged PR:\n{pr_to_display_string(pr)}\n')
     else:
-        pr.merge(merge_method='squash')
+        pr.merge(merge_method='squash', commit_message=f'Automerge {pr.html_url}: {pr.title}')
     automerge_up_to_date_prs.pop(0)
 
 # 5. Get PRs that are:

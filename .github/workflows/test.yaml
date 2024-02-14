@@ -1,6 +1,10 @@
 name: Test Workflow
 
-on: [workflow_dispatch]
+on: 
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
 
 jobs:
   list:
@@ -33,3 +37,4 @@ jobs:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          debug: --dry-run
