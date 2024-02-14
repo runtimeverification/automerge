@@ -13,7 +13,7 @@ from typing import Final
 parser = argparse.ArgumentParser(description='Automerge approved PRs.')
 parser.add_argument('--repo', type=str, help='The repository to check.')
 parser.add_argument('--org', type=str, help='The GitHub organization to check.')
-parser.add_argument('--dry-run', action='store_true', help='Enable DR run mode.')
+parser.add_argument('--dry-run', action='store_true', default=False, help='Enable Debug/Dry-Run mode.')
 args = parser.parse_args()
 
 _LOGGER: Final = logging.getLogger(__name__)
