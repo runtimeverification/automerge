@@ -37,4 +37,4 @@ jobs:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          debug: true
+          debug: --dry-run
