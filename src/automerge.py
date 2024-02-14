@@ -104,7 +104,7 @@ while automerge_up_to_date_prs:
     if args.dry_run:
         _LOGGER.info(f'Would have merged PR:\n{pr_to_display_string(pr)}\n')
     else:
-        pr.merge(merge_method='squash', merge_title=f'Auto Mergerge: {pr.number}', merge_message='Title: {pr.title}\nURL: {pr.html_url}\n')
+        pr.merge(merge_method='squash', commit_message=f'Automerge {pr.html_url}: {pr.title}')
     automerge_up_to_date_prs.pop(0)
 
 # 5. Get PRs that are:
