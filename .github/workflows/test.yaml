@@ -33,8 +33,14 @@ jobs:
 
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
         uses: ./ # This uses the action in the root directory
+        id: automerge
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           debug: --dry-run
+
+      - name: Log Results
+        run: |
+          echo "Automerge Results: ${{ steps.automerge.outputs.results }}"
+        

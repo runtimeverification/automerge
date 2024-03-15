@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description='Automerge approved PRs.')
 parser.add_argument('--repo', type=str, help='The repository to check.')
 parser.add_argument('--org', type=str, help='The GitHub organization to check.')
 parser.add_argument('--dry-run', action='store_true', default=False, help='Enable Debug/Dry-Run mode.')
+parser.add_argument('--comment', action='store_true', default=False, help='Set Commit Message to Title and URL. Default to using existing PR Title / Body')
 args = parser.parse_args()
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -41,11 +42,12 @@ def run_git_command(command_args: str) -> subprocess.CompletedProcess:
 
 github = Github(login_or_token=os.environ['GITHUB_TOKEN'])
 repo = args.org + "/" + args.repo
+repo = github.get_repo(repo)
 
 # 1. Get PRs that are:
 # - Open.
 open_prs = []
-for pr in github.get_repo(repo).get_pulls():
+for pr in repo.get_pulls():
     if pr.state == 'open':
         open_prs.append(pr)
 pr_string = '\n'.join(map(pr_to_display_string, open_prs))
@@ -73,72 +75,71 @@ for pr in open_prs:
         if approved:
             automerge_prs.append(pr)
 pr_string = '\n'.join(map(pr_to_display_string, automerge_prs))
-_LOGGER.info(f' Automerge approved PRs:\n{pr_string}\n')
+_LOGGER.info(f'Approved PRs:\n{pr_string}\n')
 if not automerge_prs:
     _LOGGER.info(' Quitting.')
     sys.exit(0)
-
-# 3. Get PRs that are:
-# - Open,
-# - Labelled as `automerge`,
-# - Approved,
-# - Up-to-date, and
-# - Passing tests.
-automerge_up_to_date_prs = []
+    
+# 3. Sort PRs into 3 categories 
+# - Up-to-date and passing
+# - Up-to-date and behind 
+# - Pending/Blocked PRs
+up_to_date_passing_prs = []
+do_nothing_pending_prs = []
+out_of_date_passing_prs = []
 for pr in automerge_prs:
-    is_up_to_date = run_git_command(f'merge-base --is-ancestor {pr.base.sha} {pr.head.sha}').returncode == 0
-    if pr.mergeable_state == 'clean' and is_up_to_date:
-        automerge_up_to_date_prs.append(pr)
-pr_string = '\n'.join(map(pr_to_display_string, automerge_up_to_date_prs))
-_LOGGER.info(f' Automerge approved up-to-date PRs:\n{pr_string}\n')
+    base_branch = repo.get_branch(pr.base.ref)
+    if base_branch.protected:
+        required_status_checks = base_branch.get_required_status_checks()
+        latest_commit = pr.get_commits().reversed[0]
+        latest_commit_checks = {check_run.name: check_run for check_run in latest_commit.get_check_runs()}
+        all_checks_passed = True
+        for required_check in required_status_checks.contexts:
+            if required_check not in latest_commit_checks:
+                print(f"Required check {required_check} is missing in the latest commit.")
+                all_checks_passed = False
+            else:
+                check_run = latest_commit_checks[required_check]
+                if check_run.conclusion == 'success':
+                    print(f"Required check {required_check} passed on PR#{pr.number}")
+                else:
+                    print(f"Required check {required_check} failed or is pending on PR#{pr.number}")
+                    all_checks_passed = False
+    commit = [c for c in pr.get_commits() if c.sha == pr.head.sha][0]
+    combined_status = commit.get_combined_status().state
+    if pr.mergeable_state == 'clean' and all_checks_passed:
+        up_to_date_passing_prs.append(pr)
+    elif pr.mergeable_state == 'behind':
+        if all_checks_passed:
+            out_of_date_passing_prs.append(pr)
+        else:
+            do_nothing_pending_prs.append(pr)
+pr_string = '\n'.join(map(pr_to_display_string, up_to_date_passing_prs))
+_LOGGER.info(f' Automerge Approved Up-to-Date PRs:\n{pr_string}\n')
+pr_string = '\n'.join(map(pr_to_display_string, out_of_date_passing_prs))
+_LOGGER.info(f' Update Out-of-Date Passing PRs:\n{pr_string}\n')
+pr_string = '\n'.join(map(pr_to_display_string, do_nothing_pending_prs))
+_LOGGER.info(f' Do Nothing Pending/Failing PRs:\n{pr_string}\n')
 
-# 4. Get PRs that are:
-# - Open,
-# - Labelled as `automerge`,
-# - Approved, and
-# - Up-to-date.
-# If so, merge
-while automerge_up_to_date_prs:
-    pr = automerge_up_to_date_prs[0]
-    _LOGGER.info(f' Merging PR:\n{pr_to_display_string(pr)}\n')
+while up_to_date_passing_prs:
+    pr = up_to_date_passing_prs[0]
     if args.dry_run:
         _LOGGER.info(f'Would have merged PR:\n{pr_to_display_string(pr)}\n')
+        _LOGGER.info(f'With Comment: {args.comment}')
+        _LOGGER.info(f"With Comment Message would be: \nAutomerged: [{pr.title}]({pr.html_url})")
     else:
-        pr.merge(merge_method='squash', commit_message=f'Automerge {pr.html_url}: {pr.title}')
-    automerge_up_to_date_prs.pop(0)
+        if args.comment:
+            pr.merge(merge_method='squash', commit_message=f'Automerged {pr.html_url}: {pr.title}')
+        else:
+            pr.merge(merge_method='squash')
+    up_to_date_passing_prs.pop(0)
 
-# 5. Get PRs that are:
-    # - Open,
-    # - Labelled as `automerge`,
-    # - Approved,
-    # - Up-to-date, and
-    # - Pending tests.
-automerge_up_to_date_pending_prs = []
-for pr in automerge_prs:
-    is_up_to_date = run_git_command(f'merge-base --is-ancestor {pr.base.sha} {pr.head.sha}').returncode == 0
-    commit = [c for c in pr.get_commits() if c.sha == pr.head.sha][0]
-    is_failing = commit.get_combined_status().state == 'failure'
-    if pr.mergeable_state == 'blocked' and is_up_to_date and not is_failing:
-        print(commit.get_combined_status())
-        automerge_up_to_date_pending_prs.append(pr)
-pr_string = '\n'.join(map(pr_to_display_string, automerge_up_to_date_pending_prs))
-_LOGGER.info(f' Waiting on approved up-to-date pending/failing PRs:\n{pr_string}\n')
+while out_of_date_passing_prs:
+    pr = out_of_date_passing_prs[0]
+    if args.dry_run:
+        _LOGGER.info(f'Would have updated PR:\n{pr_to_display_string(pr)}\n')
+    else:
+        pr.update_branch()
+    out_of_date_passing_prs.pop(0)
 
-
-# 6. Get PRs that are:
-# - Open,
-# - Labelled as `automerge`,
-# - Approved,
-# - Out-of-date, and
-# - Passing tests.
-# If so, update the branch.
-automerge_out_of_date_passing_prs = []
-for pr in automerge_prs:
-    if pr.mergeable_state == 'behind':
-        automerge_out_of_date_passing_prs.append(pr)
-pr_string = '\n'.join(map(pr_to_display_string, automerge_out_of_date_passing_prs))
-_LOGGER.info(f' Approved out-of-date passing PRs:\n{pr_string}\n')
-if automerge_out_of_date_passing_prs:
-    pr = automerge_out_of_date_passing_prs[0]
-    _LOGGER.info(f' Updating PR:\n{pr_to_display_string(pr)}\n')
-    pr.update_branch()
+_LOGGER.info('Done.')

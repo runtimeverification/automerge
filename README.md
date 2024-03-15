@@ -1,4 +1,4 @@
-# Automerge PR Action
+# About Automerge Action 
 This action is intended to be used in tandem with a CI workflow. 
 This workflow requires a github token  with read/write access to all the repositories it will be tracking 
 
@@ -120,4 +120,23 @@ $(pwd)/../src/automerge.py --org runtimeverification --repo automerger-test --dr
 
 Recommended to first review the actions before running without. Then remove the `--dry-run` flag to run the action. 
 
+# Testing
+## [test.yaml](.github/workflows/test.yaml)
 
+ ### Purpose:
+ - The purpose of the test is to import automerger action.
+ - Evaluate the test Scenarios of a Live Test Setup and Report back the values
+ 
+ ### Usage:
+ - The test.yaml file is used by the automerger to determine which pull requests to merge and under what conditions.
+ - It specifies the target repository, the specific states of the pull requests to test against, and the actions to perform.
+
+
+ ### Note:
+ - Results MUST BE MANUALLY VERIFIED BEFORE MERGE
+ - The test.yaml file should be updated whenever there are changes to the test scenarios or configurations.
+ - It is important to ensure that the test.yaml file accurately reflects the desired behavior of the automerger.
+
+ For more information, please refer to the following resources:
+ - [Link to the repository rutimeverification/automerger-test](https://github.com/runtimeverification/automerger-test)
+ - [Link to the live pull requests in the repository](https://github.com/runtimeverification/automerger-test/pulls)
