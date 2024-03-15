@@ -29,7 +29,7 @@ jobs:
         value: ${{fromJson(needs.list.outputs.matrix)}}
     steps:
       - name: 'Check Automerge Repo to Test'
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v4
 
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
         uses: ./ # This uses the action in the root directory
