@@ -56,4 +56,3 @@ runs:
       run: |
         results=$(python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} ${{ inputs.debug }})
         echo $results >> $GITHUB_OUTPUT
-

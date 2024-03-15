@@ -140,3 +140,4 @@ Recommended to first review the actions before running without. Then remove the 
  For more information, please refer to the following resources:
  - [Link to the repository rutimeverification/automerger-test](https://github.com/runtimeverification/automerger-test)
  - [Link to the live pull requests in the repository](https://github.com/runtimeverification/automerger-test/pulls)
+
