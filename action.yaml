@@ -63,4 +63,5 @@ runs:
           python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} --comment
         else
           python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} ${{ inputs.debug }}
+        fi
         
