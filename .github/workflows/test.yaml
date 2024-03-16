@@ -29,12 +29,14 @@ jobs:
         value: ${{fromJson(needs.list.outputs.matrix)}}
     steps:
       - name: 'Check Automerge Repo to Test'
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v4
 
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
         uses: ./ # This uses the action in the root directory
+        id: automerge
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           debug: --dry-run
+           
