@@ -109,7 +109,7 @@ for pr in automerge_prs:
     combined_status = commit.get_combined_status().state
     if pr.mergeable_state == 'clean' and all_checks_passed:
         up_to_date_passing_prs.append(pr)
-    elif pr.mergeable_state == 'behind':
+    elif pr.mergeable_state == 'behind' or pr.mergeable_state == 'blocked':
         if all_checks_passed:
             out_of_date_passing_prs.append(pr)
         else:
