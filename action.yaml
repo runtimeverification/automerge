@@ -18,6 +18,10 @@ inputs:
     description: 'Debug mode'
     required: false
     default: ''
+  comment:
+    description: 'Use Predefined comment'
+    required: false
+    default: 'false'
 outputs: 
   merged:
     value: ${{ steps.automerge.outputs.merged }}
@@ -54,5 +58,8 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       working-directory: tmp-${{ inputs.repo }}
       run: |
-        python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} ${{ inputs.debug }}
+        if {{ inputs.comment }} == 'true'; then
+          python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} --comment
+        else
+          python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} ${{ inputs.debug }}
         

@@ -40,3 +40,13 @@ jobs:
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           debug: --dry-run
            
+      - name: 'Automerge runtimeverification/${{ matrix.value }}'
+        uses: ./ # This uses the action in the root directory
+        id: automerge-comment
+        with:
+          org: 'runtimeverification'
+          repo: ${{ matrix.value }}
+          token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          debug: --dry-run
+          comment: 'true'
+             
