@@ -54,5 +54,5 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       working-directory: tmp-${{ inputs.repo }}
       run: |
-        results=$(python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} ${{ inputs.debug }})
-        echo $results >> $GITHUB_OUTPUT
+        python3 ${{ github.action_path }}/src/automerge.py --org ${{ inputs.org }} --repo ${{ inputs.repo }} ${{ inputs.debug }}
+        

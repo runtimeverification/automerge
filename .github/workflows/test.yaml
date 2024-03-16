@@ -39,8 +39,4 @@ jobs:
           repo: ${{ matrix.value }}
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           debug: --dry-run
-          
-      - name: Log Results
-        run: |
-          echo "Automerge Results: ${{ steps.automerge.outputs.results }}"
- 
+           
