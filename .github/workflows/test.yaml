@@ -37,7 +37,7 @@ jobs:
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          token: ${{ secrets.AUTOMERGE_TOKEN }}
           debug: --dry-run
            
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
@@ -46,7 +46,7 @@ jobs:
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          token: ${{ secrets.AUTOMERGE_TOKEN }}
           debug: --dry-run
           comment: 'true'
              
