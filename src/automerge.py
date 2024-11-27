@@ -90,21 +90,12 @@ out_of_date_passing_prs = []
 for pr in automerge_prs:
     base_branch = repo.get_branch(pr.base.ref)
     if base_branch.protected:
-        required_status_checks = base_branch.get_required_status_checks()
-        latest_commit = pr.get_commits().reversed[0]
-        latest_commit_checks = {check_run.name: check_run for check_run in latest_commit.get_check_runs()}
-        all_checks_passed = True
-        for required_check in required_status_checks.contexts:
-            if required_check not in latest_commit_checks:
-                print(f"Required check {required_check} is missing in the latest commit.")
-                all_checks_passed = False
-            else:
-                check_run = latest_commit_checks[required_check]
-                if check_run.conclusion == 'success':
-                    print(f"Required check {required_check} passed on PR#{pr.number}")
-                else:
-                    print(f"Required check {required_check} failed or is pending on PR#{pr.number}")
-                    all_checks_passed = False
+        commit = pr.get_commits().reversed[0]
+        combined_status = commit.get_combined_status()
+        all_checks_passed = combined_status.state == 'success'
+        
+        if not all_checks_passed:
+            _LOGGER.info(f"Checks are not passing ({combined_status.state}) on PR#{pr.number}")
     commit = [c for c in pr.get_commits() if c.sha == pr.head.sha][0]
     combined_status = commit.get_combined_status().state
     if pr.mergeable_state == 'clean' and all_checks_passed:
