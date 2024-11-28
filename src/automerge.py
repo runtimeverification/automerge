@@ -91,11 +91,12 @@ for pr in automerge_prs:
     base_branch = repo.get_branch(pr.base.ref)
     if base_branch.protected:
         commit = pr.get_commits().reversed[0]
-        combined_status = commit.get_combined_status()
-        all_checks_passed = combined_status.state == 'success'
+        statuses = commit.get_statuses()
+        all_checks_passed = all(print(status) for status in statuses)
+        list_statuses = [status.state for status in statuses]
         
         if not all_checks_passed:
-            _LOGGER.info(f"Checks are not passing ({combined_status.state}) on PR#{pr.number}")
+            _LOGGER.info(f"Checks are not passing ({list_statuses[-1]}) on PR#{pr.number}")
     commit = [c for c in pr.get_commits() if c.sha == pr.head.sha][0]
     combined_status = commit.get_combined_status().state
     if pr.mergeable_state == 'clean' and all_checks_passed:
