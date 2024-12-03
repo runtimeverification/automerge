@@ -18,6 +18,12 @@ jobs:
       - id: list
         name: 'List automerge repos'
         run: echo "value=$(cat test/automerge.json | tr -d '\n')" >> $GITHUB_OUTPUT
+      - name: 'Generate GitHub App Token'
+        id: automerge_token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app_id: ${{ secrets.AUTOMERGE_APP_ID }}
+          private_key: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
   
   automerge-test:
     name: 'Automerge'
@@ -37,7 +43,7 @@ jobs:
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
-          token: ${{ secrets.AUTOMERGE_TOKEN }}
+          token: ${{ needs.list.outputs.token }}
           debug: --dry-run
            
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
@@ -46,7 +52,7 @@ jobs:
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
-          token: ${{ secrets.AUTOMERGE_TOKEN }}
+          token: ${{ needs.list.outputs.token }}
           debug: --dry-run
           comment: 'true'
              
