@@ -20,6 +20,8 @@ jobs:
           app_id: ${{ secrets.AUTOMERGE_APP_ID }}
           private_key: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
       - name: 'Check out devops repo'
+        env:
+          token: ${{ needs.list.outputs.token }}
         uses: actions/checkout@v4.0.0
       - id: list
         name: 'List automerge repos'
@@ -36,7 +38,7 @@ jobs:
     steps:
       - name: 'Check Automerge Repo to Test'
         env:
-          GITHUB_TOKEN: ${{ needs.list.outputs.token }}
+          token: ${{ needs.list.outputs.token }}
         uses: actions/checkout@v4
 
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
