@@ -19,8 +19,10 @@ args = parser.parse_args()
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
-logging.basicConfig(level=logging.INFO)
-
+if args.dry_run:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 def pr_to_display_string(pr):
     return f'- {pr.number}: {pr.title}\n\t\t{pr.html_url}'
@@ -89,16 +91,14 @@ do_nothing_pending_prs = []
 out_of_date_passing_prs = []
 for pr in automerge_prs:
     base_branch = repo.get_branch(pr.base.ref)
-    if base_branch.protected:
-        commit = pr.get_commits().reversed[0]
-        statuses = commit.get_statuses()
-        all_checks_passed = all(print(status) for status in statuses)
-        list_statuses = [status.state for status in statuses]
-        
-        if not all_checks_passed:
-            _LOGGER.info(f"Checks are not passing ({list_statuses[-1]}) on PR#{pr.number}")
     commit = [c for c in pr.get_commits() if c.sha == pr.head.sha][0]
-    combined_status = commit.get_combined_status().state
+    commit_check_runs = commit.get_check_runs()
+    all_checks_passed = all(run.conclusion == "success" for run in commit_check_runs)
+    _LOGGER.debug(f'HEAD Commit: {commit}')
+    _LOGGER.debug(f'All Checks Passed? {all_checks_passed}')
+    if args.dry_run:
+        for check_run in commit_check_runs:
+            _LOGGER.debug(f'Check Run: {check_run}')
     if pr.mergeable_state == 'clean' and all_checks_passed:
         up_to_date_passing_prs.append(pr)
     elif pr.mergeable_state == 'behind' or pr.mergeable_state == 'blocked':
