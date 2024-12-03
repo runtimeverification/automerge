@@ -38,9 +38,17 @@ jobs:
       matrix:
         value: ${{fromJson(needs.list.outputs.matrix)}}
     steps:
+      - name: 'Generate GitHub App Token'
+        id: automerge_token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app-id: ${{ secrets.AUTOMERGE_APP_ID }}
+          private-key: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
       - name: 'Check Automerge Repo to Test'
         env:
-          token: ${{ needs.list.outputs.token }}
+          token: ${{ steps.automerge_token.outputs.token }}
         uses: actions/checkout@v4
 
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
@@ -49,7 +57,7 @@ jobs:
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
-          token: ${{ needs.list.outputs.token }}
+          token: ${{ steps.automerge_token.outputs.token }}
           debug: --dry-run
            
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
@@ -58,7 +66,7 @@ jobs:
         with:
           org: 'runtimeverification'
           repo: ${{ matrix.value }}
-          token: ${{ needs.list.outputs.token }}
+          token: ${{ steps.automerge_token.outputs.token }}
           debug: --dry-run
           comment: 'true'
              
