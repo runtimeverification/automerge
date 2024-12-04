@@ -15,6 +15,17 @@ Any PR with the following criteria will be updated and test will be run before m
 - PR is passing PR Tests
 - PR is out-of-date
 
+A Github App is required to generate the appropriate Permissions for Automerge to work.
+- The Github App is not public and requires each org to generate their own.  
+  Adding a token generation step to their automerge workflow. See Example Workflow below.
+- Specific repositories can be granted access using the app instead of ALL repositories under the org. 
+
+Github App Permissions:
+- Content Read/Write -- For Updating PRs
+- Pull Request Read/Write -- For Updating PRs
+- Repository Administration Read -- For read access to repositories under the Org. 
+- Checks Read -- For reading the check statuses of the PR
+
 ## Table of Contents
 - [Automerge PR Action](#automerge-pr-action)
   - [Table of Contents](#table-of-contents)
@@ -62,7 +73,13 @@ jobs:
       - id: list
         name: 'List automerge repos'
         run: echo "value=$(cat test/automerge.json | tr -d '\n')" >> $GITHUB_OUTPUT
-  
+      - name: 'Generate GitHub App Token'
+        id: automerge_token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app_id: ${{ secrets.AUTOMERGE_APP_ID }}
+          private_key: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
+
   automerge-test:
     name: 'Automerge'
     runs-on: [ubuntu-latest]
@@ -73,7 +90,7 @@ jobs:
         value: ${{fromJson(needs.list.outputs.matrix)}}
     steps:
       - name: 'Automerge runtimeverification/${{ matrix.value }}'
-        uses: ./ # This uses the action in the root directory
+        uses: runtimeverification/automerge@v1.0.4 # This uses the action in the root directory
         with:
           org: 'runtimeverification' # As long as the token you use has access, any org is valid here
           repo: ${{ matrix.value }}
@@ -112,8 +129,9 @@ Checkout the repository you wish to run automerge on to a local directory.
 git clone git@github.com:org/automerge.git
 cd automerge
 ```
-
-Now you need to run the command from this new directory 
+Setup `GITHUB_TOKEN` with the appropriate permissions: Content Read/Write, Pull Request Read/Write, Adminstration Read, Checks Read. 
+Now you need to run the command from this new directory. 
+RV setup a test repository with Pull Requests in Known States to validate the action is working as expected. 
 ```bash
 $(pwd)/../src/automerge.py --org runtimeverification --repo automerger-test --dry-run
 ```
