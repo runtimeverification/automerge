@@ -129,7 +129,7 @@ Checkout the repository you wish to run automerge on to a local directory.
 git clone git@github.com:org/automerge.git
 cd automerge
 ```
-Setup GITHUB_TOKEN with the appropriate permissions. Content Read/Write, Pull Request Read/Write, adminstration Read, Checks Read. 
+Setup `GITHUB_TOKEN` with the appropriate permissions: Content Read/Write, Pull Request Read/Write, Adminstration Read, Checks Read. 
 Now you need to run the command from this new directory. 
 RV setup a test repository with Pull Requests in Known States to validate the action is working as expected. 
 ```bash
