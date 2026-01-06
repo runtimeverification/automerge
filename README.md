@@ -5,14 +5,14 @@ This workflow requires a github token  with read/write access to all the reposit
 Any PRs that meet the following criteria will be automerged:
 - PR is open
 - PR is mergeable
-- PR is passing test
+- PR is passing all PR checks (skipped checks count as passed)
 - PR is approved by at least one reviewer
 - PR is up-to-date with the base branch
 
 Any PR with the following criteria will be updated and test will be run before merging:
 - PR is open
 - PR is approved
-- PR is passing PR Tests
+- PR is passing all PR checks (skipped checks count as passed)
 - PR is out-of-date
 
 A Github App is required to generate the appropriate Permissions for Automerge to work.
