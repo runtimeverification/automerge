@@ -93,7 +93,7 @@ for pr in automerge_prs:
     base_branch = repo.get_branch(pr.base.ref)
     commit = [c for c in pr.get_commits() if c.sha == pr.head.sha][0]
     commit_check_runs = commit.get_check_runs()
-    all_checks_passed = all(run.conclusion == "success" for run in commit_check_runs)
+    all_checks_passed = all(run.conclusion in ("success", "skipped") for run in commit_check_runs)
     _LOGGER.debug(f'HEAD Commit: {commit}')
     _LOGGER.debug(f'All Checks Passed? {all_checks_passed}')
     if args.dry_run:
